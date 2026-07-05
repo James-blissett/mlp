@@ -1,5 +1,5 @@
 # mlp
-Building an multi-layer perceptron by hand to build my fundaments understanding
+Building an multi-layer perceptron by hand to build my understanding of the fundamentals.
 
 ### What is a Multi-Layer Perceptron (MLP), and why the name?
 
