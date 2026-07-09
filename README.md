@@ -61,5 +61,22 @@ just some vector $b'$. So the two-layer network is equivalent to:
 
 $$z^{(2)} = W' x + b'$$
 
-...a single linear layer. So, if you don't apply an activation function, your massive facny *deep* neural network collapses into just 1 layer. The activation function is what enables a neural network to be *deep*.
+...a single linear layer. So, if you don't apply an activation function, your massive facny *deep* neural network collapses into just 1 layer. The activation function is what enables a neural network to be *deep*. What you're doing, geometrically, is that by applying the non-linear activation function, you bend the space a little, meaning the stacked layers can't be represented as a linear combination and you can therefore represent useful non-linear features in your model.
+
+The ReLU function is used specifically (vs other functions such as a Sigmoid which is also often seen) because it has the following useful properties:
+
+1) Sparse Representations: When z is negative, the ReLU is 0 - this is called a sparse representation because you will get some sparse field of values with lots of zeros in-between. On the other hand, a sigmoid will often produce some negative number when z is negative - this is call a dense representation because you will still get lots of non-zero values. It turns out sparse representations are better for learning, and I won't try answer why.
+2) Reduces the vanishing gradient problem: for ReLU, as $|x|$ increases the gradient stays constant, whereas for a sigmoid as $|x|$ increases the gradient becomes increasingly smaller, causing issues for learning. We'll get into the specifics of gradients and all those other things later don't worry.
+
+The activation function is then computed for each layer in sequence from layer 1 through to the second last layer. If you think that sounds slow then you're right, that's what diffusion models are for (though we won't get into them here).
+
+Now for the final layer. Remember earlier that the final layer will take the shape of whatever you want to output. If the purpose of the MLP is a classification task, then the output of the MLP will be one value found using a sigmoid (0 if negative, 1 if positive). If this were an LLM, your final layer may have $50,000$ nodes, one for each vocab element. Your pre-activation score will be a vector $z = [z_1, z_2, \ldots, z_V] \quad (V = \text{vocabulary size})$ where each $z_n$ corresponds to one of the $50,000$ nodes. Each node pre-activation value $z_n$ is called a logit. Only the pre-activation scores for the final layer are called logits by the way. For an LLM, instead of a sigmoid you need something called a SoftMax function, which takes the massive pre-activation vector $z$ and turns it into a single probability distribution. We won't spend more time on it, other than saying it looks like this:
+
+$P(\text{token } i) = \frac{e^{z_i}}{\sum_{j=1}^{V} e^{z_j}}$
+
+### Step 2: Loss Calculation
+Finally on to step 2.
+
+
+
 
