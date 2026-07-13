@@ -43,8 +43,9 @@ Firstly, the network needs to be initialised with a set of values to start refin
 Then for each node, the pre-activation weighted sum is calculated. After that, the activation function is applied (the $\sigma!$). This activation function is often a Rectified Linear Unit (ReLU) function. What is a ReLU? It is a function that is positive linear when $x$ is positive, and is zero when $x$ is negative. Why apply this to the nodes? Well, at a high level an activation function is applied to allow positive values to pass unchanged and sets negative values to zero. 
 
 <p align="center">
-  <img src="image.png" alt="the shape of a ReLU function" width="600">
+  <img src="image-3.png" alt="the shape of a ReLU and function" width="600">
 </p>
+
 
 But more specifically, the reason for applying the activation function is very cool. Suppose each layer just computes its pre-activation and passes it straight on:
 
@@ -61,7 +62,11 @@ just some vector $b'$. So the two-layer network is equivalent to:
 
 $$z^{(2)} = W' x + b'$$
 
-...a single linear layer. So, if you don't apply an activation function, your massive facny *deep* neural network collapses into just 1 layer. The activation function is what enables a neural network to be *deep*. What you're doing, geometrically, is that by applying the non-linear activation function, you bend the space a little, meaning the stacked layers can't be represented as a linear combination and you can therefore represent useful non-linear features in your model.
+...a single linear layer. So, if you don't apply an activation function, your massive fancy *deep* neural network collapses into just 1 layer. The activation function is what enables a neural network to be *deep*. What you're doing, geometrically, is that by applying the non-linear activation function, you bend the space a little, meaning the stacked layers can't be represented as a linear combination and you can therefore represent useful non-linear features in your model. The way layers then connect together is shown in the below diagram.
+
+<p align="center">
+  <img src="image-2.png" alt="How Weights and Biases are used" width="500">
+</p>
 
 The ReLU function is used specifically (vs other functions such as a Sigmoid which is also often seen) because it has the following useful properties:
 
@@ -70,13 +75,52 @@ The ReLU function is used specifically (vs other functions such as a Sigmoid whi
 
 The activation function is then computed for each layer in sequence from layer 1 through to the second last layer. If you think that sounds slow then you're right, that's what diffusion models are for (though we won't get into them here).
 
-Now for the final layer. Remember earlier that the final layer will take the shape of whatever you want to output. If the purpose of the MLP is a classification task, then the output of the MLP will be one value found using a sigmoid (0 if negative, 1 if positive). If this were an LLM, your final layer may have $50,000$ nodes, one for each vocab element. Your pre-activation score will be a vector $z = [z_1, z_2, \ldots, z_V] \quad (V = \text{vocabulary size})$ where each $z_n$ corresponds to one of the $50,000$ nodes. Each node pre-activation value $z_n$ is called a logit. Only the pre-activation scores for the final layer are called logits by the way. For an LLM, instead of a sigmoid you need something called a SoftMax function, which takes the massive pre-activation vector $z$ and turns it into a single probability distribution. We won't spend more time on it, other than saying it looks like this:
+Now for the final layer. Remember earlier that the final layer will take the shape of whatever you want to output. If the purpose of the MLP is a classification task, then the output of the MLP will be one value found using a sigmoid. This output of the sigmoid, for the classification task, will be some probability that the input belongs to a certain category, between 0 to 1. You can see this geometrically in the above diagram, where the sigmpod function has an asymptote at 0 and 1.
 
-$P(\text{token } i) = \frac{e^{z_i}}{\sum_{j=1}^{V} e^{z_j}}$
+If this were an LLM, your final layer may have $50,000$ nodes, one for each vocab element. Your pre-activation score will be a vector $z = [z_1, z_2, \ldots, z_V] \quad (V = \text{vocabulary size})$ where each $z_n$ corresponds to one of the $50,000$ nodes. Each node pre-activation value $z_n$ is called a logit. Only the pre-activation scores for the final layer are called logits by the way. For an LLM, instead of a sigmoid you need something called a SoftMax function, which takes the massive pre-activation vector $z$ and turns it into a single probability distribution. We won't spend more time on it, other than saying it looks like this:
+
+$$P(\text{token } i) = \frac{e^{z_i}}{\sum_{j=1}^{V} e^{z_j}}$$
 
 ### Step 2: Loss Calculation
 Finally on to step 2.
 
+A loss function is a function that evaluates the difference between the model's output and the desired output; it is something we want to minimise. It is synonymous with the error function, or cost function which you may be familiar with if you have studied control theory.
+
+<p align="center">
+  <img src="image-1.png" alt="Loss Function Categorisation" width="600">
+</p>
+
+As seen in the above figure, there are two types of loss function: classification task loss functions, and regression task loss functions. Some examples of each type of loss include:
+
+**Classification** (predicts a category):
+- Spam detection — spam or not spam
+- Image labelling — cat, dog, or bird
+- Next-token prediction (LLMs) — which token comes next
+
+**Regression** (predicts a continuous value):
+- House price prediction — a dollar amount
+- Temperature forecasting — tomorrow's temperature
+- Robot joint control — target joint angle
+ 
+We will restrict scope to classification tasks for now. The type of function used for classification tasks is called a cross-entropy loss function. We restrict scope further here to binary cross-entropy, for when you have to decide between a yes or no. The binary cross-entropy loss function takes the form:
 
 
+For a single prediction:
+ 
+$$L = -\big[\, y \log(p) + (1 - y)\log(1 - p) \,\big]$$
+ 
+where $y$ is the true label (0 or 1) and $p$ is the predicted probability of
+class 1 (the sigmoid output).
+ 
+- If $y = 1$: reduces to $L = -\log(p)$
+- If $y = 0$: reduces to $L = -\log(1 - p)$
+Either way, it comes out to $-\log(\text{probability assigned to the correct class})$.
+ 
+Averaged over $N$ examples, you get the cost (loss) function:
+ 
+$$L = -\frac{1}{N}\sum_{n=1}^{N} \Big[\, y_n \log(p_n) + (1 - y_n)\log(1 - p_n) \,\Big]$$
+ 
+Now we have a loss function, we need to figure out how to minimise it.
 
+### Step 3: Backpropogation
+Before we dive into backpropogation, let's first consider at a high level what we're doing here in order to minimise the loss function, and how we'll do it. The goal is training, as stated earlier, is to find the model weights that minimise the loss function. 
