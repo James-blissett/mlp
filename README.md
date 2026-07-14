@@ -123,4 +123,13 @@ $$L = -\frac{1}{N}\sum_{n=1}^{N} \Big[\, y_n \log(p_n) + (1 - y_n)\log(1 - p_n) 
 Now we have a loss function, we need to figure out how to minimise it.
 
 ### Step 3: Backpropogation
-Before we dive into backpropogation, let's first consider at a high level what we're doing here in order to minimise the loss function, and how we'll do it. The goal is training, as stated earlier, is to find the model weights that minimise the loss function. 
+Before we dive into backpropogation, let's first consider at a high level what we're doing here in order to minimise the loss function, and how we'll do it. The goal of training, as stated earlier, is to find the model weights that minimise the loss function. The process of minimising that loss function is called gradient descent, and backpropogation is used in gradient descent to find the gradient vector (which will be explained in a moment).
+
+What is gradient descent? Imagine you are standing on the surface shown in the below figure. You want to 
+
+
+
+
+<p align="center">
+  <img src="image-5.png" alt="surface" width="500">
+</p>
