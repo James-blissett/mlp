@@ -122,14 +122,79 @@ $$L = -\frac{1}{N}\sum_{n=1}^{N} \Big[\, y_n \log(p_n) + (1 - y_n)\log(1 - p_n) 
  
 Now we have a loss function, we need to figure out how to minimise it.
 
-### Step 3: Backpropogation
-Before we dive into backpropogation, let's first consider at a high level what we're doing here in order to minimise the loss function, and how we'll do it. The goal of training, as stated earlier, is to find the model weights that minimise the loss function. The process of minimising that loss function is called gradient descent, and backpropogation is used in gradient descent to find the gradient vector (which will be explained in a moment).
+### Step 4: Weight Update
+Yes, we're looking at the weight updates, which is step 4, before looking at backpropogation, which is step 3 in the MLP operational sequence. This is so we understand at a high level what we're doing, then we can zoom in on one element of the weight update, which will be backpropogation. The goal of training, as stated earlier, is to find the model weights that minimise the loss function. The process of minimising that loss function is called gradient descent, and backpropogation is used in gradient descent to find the gradient vector.
 
-What is gradient descent? Imagine you are standing on the surface shown in the below figure. You want to 
-
-
-
+What is gradient descent? Imagine you are standing on the surface shown in the below figure. This surface represents the set all the possible values your loss function can take. You want to find the minimum loss function, which means navigating to the lowest point on the surface. Note, the diagram below only has 2 weights modelled, which is the limit of what can be shown in 3D. More weights would mean more dimensions, which humans can't quite grasp.  
 
 <p align="center">
   <img src="image-5.png" alt="surface" width="500">
 </p>
+
+First, let me lay out the equations for gradient descent. For now, don't try understand them, just note their shape as we'll refer back to them later. 
+
+$$f(x) = f(x_k) + \nabla f(x_k)^{\mathsf{T}}\,(x - x_k) + \text{h.o.t.} \tag{1}$$
+
+$$\nabla f(x_k)^{\mathsf{T}} = \frac{\partial f}{\partial x} = \begin{bmatrix} \dfrac{\partial f}{\partial x_1} & \dfrac{\partial f}{\partial x_2} & \cdots & \dfrac{\partial f}{\partial x_n} \end{bmatrix} \tag{2}$$
+
+$$x_{k+1} = x_k - h_k\,\nabla f(x_k) \tag{3}$$
+
+How do you find that minimum point? Well, think about what you would do if you were standing on a mountain range and someone said 'make your way to the bottom of the mountains'. The first thing you would do is figure out which direction to start walking in, i.e. which direction is 'down'. This is done in gradient descent by finding the gradient vector, denoted $\nabla f(x_k)$ in equation 3. A positive gradient means the surface slopes upward, so you need to take the negative to flip around and point your direction down the slope towards the bottom of the hill, which is how you end up with $-\nabla f(x_k)$.
+
+The other factor that has to be considered is how big each of your steps are as you walk down the hill, $h_k$. If you take small steps, you have a very safe but slow descent down the slope. If you take really big leaps you risk falling and hurting yourself. Applying this to gradient descent, small steps will gaurentee good results but just takes ages, while big steps could lead to very unstable behaviour. The formal name for the step size $h_k$ is the learning rate.
+
+Now we can see that the expression for gradient descent in equation 3 is really intuitive. You've got your current position $x_k$, and you subtract your next step times the direction of that step, $- h_k\,\nabla f(x_k)$. To make the connections with the equations earlier in this doc clearer, I present a mapping table below:
+
+<div align="center">
+
+<table>
+<tr><th>General Grad. Descent </th><th>Neural net training</th></tr>
+<tr><td><code>f(x)</code> — function to minimize</td><td><code>L(w)</code> — the loss function</td></tr>
+<tr><td><code>x</code> — the variable</td><td><code>w</code> — the weights</td></tr>
+<tr><td><code>∇f(x_k)</code> — gradient vector</td><td><code>∇L(w_k)</code> — gradients from backprop</td></tr>
+<tr><td><code>x_{k+1} = x_k − h_k ∇f(x_k)</code></td><td>the weight update step</td></tr>
+<tr><td><code>h_k</code> — step size</td><td>learning rate</td></tr>
+</table>
+
+</div>
+
+This table should make the weight update step clear too.
+
+### Step 3: Backpropogation
+In order to do the weight update step, we need to know the gradient vector. This is done using backpropogation. To illustrate Step 3 I will rely heavily on the illustrations done by Samy Baladram in his Medium article linked [here](https://medium.com/data-science/multilayer-perceptron-explained-a-visual-guide-with-mini-2d-dataset-0ae8100c5d1c).
+
+As hinted at above, given we're trying to minimise the loss by varying the weights, the gradient vector will take the form: 
+
+$$\nabla f(x_k) = \nabla L(w_k) = \left[ \frac{\partial L}{\partial w_1}, \frac{\partial L}{\partial w_2}, \dots, \frac{\partial L}{\partial w_n} \right]$$
+
+So, how do we find $\frac{\partial L}{\partial w_k}$? We will use the chain rule to examine the effect of each layer's weights and biases on the loss - to do so we'll evaluate the partial derivatives of all the elements of the MLP. With the way we've set up the partial derivatives, you will see that the result of the chain rule will cancel out to be $\frac{\partial L}{\partial w_k}$. 
+
+<div align="center">
+<table>
+<tr>
+<td align="center"><img src="image-6.png" alt="MLP elements" width="400"></td>
+<td align="center"><h1>⟶</h1><em>take partial derivative of each element</em></td>
+<td align="center"><img src="image-7.png" alt="partial derivatives" width="473"></td>
+</tr>
+</table>
+</div>
+
+Delving into the specific calculus rules used to find the respective partial derivatives for each element of the MLP is probbaly out of scope for this tutorial, so I will just skip to showing a table of all the solutions to the partial derivatives in the diagram above.
+
+<div align="center">
+
+| Layer | Forward pass | Local gradients |
+|---|---|---|
+| **Loss** | $L = -y\log(\hat{y}) - (1-y)\log(1-\hat{y})$ | $\dfrac{\partial L}{\partial \hat{y}} = \dfrac{\hat{y} - y}{\hat{y}(1-\hat{y})}$ |
+| **Output** | $\hat{y} = \sigma(z^{[3]})$ | $\dfrac{d\hat{y}}{dz^{[3]}} = \hat{y}(1-\hat{y})$ |
+| **Output** | $z^{[3]} = a^{[2]}W^{[3]} + b^{[3]}$ | $\dfrac{\partial z^{[3]}}{\partial a^{[2]}} = W^{[3]\top} \qquad \dfrac{\partial z^{[3]}}{\partial W^{[3]}} = a^{[2]\top} \qquad \dfrac{\partial z^{[3]}}{\partial b^{[3]}} = 1$ |
+| **Hidden 2** | $a^{[2]} = \text{ReLU}(z^{[2]})$ | $\dfrac{da^{[2]}}{dz^{[2]}} = \text{diag}(z^{[2]})$ |
+| **Hidden 2** | $z^{[2]} = a^{[1]}W^{[2]} + b^{[2]}$ | $\dfrac{\partial z^{[2]}}{\partial a^{[1]}} = W^{[2]\top} \qquad \dfrac{\partial z^{[2]}}{\partial W^{[2]}} = a^{[1]\top} \qquad \dfrac{\partial z^{[2]}}{\partial b^{[2]}} = I$ |
+| **Hidden 1** | $a^{[1]} = \text{ReLU}(z^{[1]})$ | $\dfrac{da^{[1]}}{dz^{[1]}} = \text{diag}(z^{[1]})$ |
+| **Hidden 1** | $z^{[1]} = xW^{[1]} + b^{[1]}$ | $\dfrac{\partial z^{[1]}}{\partial x} = W^{[1]\top} \qquad \dfrac{\partial z^{[1]}}{\partial W^{[1]}} = x^{\top} \qquad \dfrac{\partial z^{[1]}}{\partial b^{[1]}} = I$ |
+
+</div>
+
+You then multiply these through to get each weight and biases partial derivative!
+
+However, we don't use the raw partial derivatives. Instead, we calculate layer errors, the gradient with respect to the pre-activation outputs, $\frac{\partial L}{\partial w_1}$ which help determine how much we should adjust the weights and biases in earlier layers. 
