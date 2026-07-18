@@ -26,13 +26,13 @@ Biases are the node's baseline/threashold. If the nodes preceeding the node of f
 
 The more proper algebraically defined version of the above equation is as follows, where $\sigma!$ is just a symbol used to represent the activation function. $\sigma!$ is the same as $f$ in $f(x)$, but is just *special* becasuse this is machine learning. 
 
-$$y = \sigma!\left( \sum_{i=1}^{n} w_i x_i + b \right)$$
+$$y = \sigma!\left( \sum_{i=1}^{n} w_i x_i + b \right) \tag{1}$$
 
 The pre-activation version is as follows. We'll come back to this later probably. 
-$$z = \sum_{i=1}^{n} w_i x_i + b \qquad y = \sigma(z)$$
+$$z = \sum_{i=1}^{n} w_i x_i + b \qquad y = \sigma(z) \tag{2}$$
 
 And it may also be useful to define the vector form of the equation too.
-$$y = \sigma!\left( \mathbf{w}^\top \mathbf{x} + b \right)$$
+$$y = \sigma!\left( \mathbf{w}^\top \mathbf{x} + b \right) \tag{3}$$
 
 ## How information moves through the neural net
 How does the network turn inputs into useful outputs?
@@ -40,7 +40,7 @@ How does the network turn inputs into useful outputs?
 ### Step 1: Forward Pass
 Firstly, the network needs to be initialised with a set of values to start refining from. These are chosen at random to ensure the network doesn't start off with any biases baked in, that could affect the training process. The starting value range is chosen between $(-1,1)$.
 
-Then for each node, the pre-activation weighted sum is calculated. After that, the activation function is applied (the $\sigma!$). This activation function is often a Rectified Linear Unit (ReLU) function. What is a ReLU? It is a function that is positive linear when $x$ is positive, and is zero when $x$ is negative. Why apply this to the nodes? Well, at a high level an activation function is applied to allow positive values to pass unchanged and sets negative values to zero. 
+Then for each node, the pre-activation weighted sum is calculated. After that, the activation function is applied (the $\sigma!$ in Equation 1). This activation function is often a Rectified Linear Unit (ReLU) function. What is a ReLU? It is a function that is positive linear when $x$ is positive, and is zero when $x$ is negative. Why apply this to the nodes? Well, at a high level an activation function is applied to allow positive values to pass unchanged and sets negative values to zero. 
 
 <p align="center">
   <img src="images/image-3.png" alt="the shape of a ReLU and function" width="600">
@@ -49,20 +49,20 @@ Then for each node, the pre-activation weighted sum is calculated. After that, t
 
 But more specifically, the reason for applying the activation function is very cool. Suppose each layer just computes its pre-activation and passes it straight on:
 
-$$z^{(1)} = W_1 x + b_1$$
+$$z^{(1)} = W_1 x + b_1 \tag{4}$$
 
-$$z^{(2)} = W_2 z^{(1)} + b_2 = W_2(W_1 x + b_1) + b_2$$
+$$z^{(2)} = W_2 z^{(1)} + b_2 = W_2(W_1 x + b_1) + b_2 \tag{5}$$
 
 Multiply that out:
 
-$$z^{(2)} = (W_2 W_1)\, x + (W_2 b_1 + b_2)$$
+$$z^{(2)} = (W_2 W_1)\, x + (W_2 b_1 + b_2) \tag{6}$$
 
 Notice $W_2 W_1$ is just some matrix — call it $W'$ — and $W_2 b_1 + b_2$ is
 just some vector $b'$. So the two-layer network is equivalent to:
 
-$$z^{(2)} = W' x + b'$$
+$$z^{(2)} = W' x + b' \tag{7}$$
 
-...a single linear layer. So, if you don't apply an activation function, your massive fancy *deep* neural network collapses into just 1 layer. The activation function is what enables a neural network to be *deep*. What you're doing, geometrically, is that by applying the non-linear activation function, you bend the space a little, meaning the stacked layers can't be represented as a linear combination and you can therefore represent useful non-linear features in your model. The way layers then connect together is shown in the below diagram.
+...a single linear layer. So, as Equation 7 shows, if you don't apply an activation function, your massive fancy *deep* neural network collapses into just 1 layer. The activation function is what enables a neural network to be *deep*. What you're doing, geometrically, is that by applying the non-linear activation function, you bend the space a little, meaning the stacked layers can't be represented as a linear combination and you can therefore represent useful non-linear features in your model. The way layers then connect together is shown in the below diagram.
 
 <p align="center">
   <img src="images/image-2.png" alt="How Weights and Biases are used" width="500">
@@ -79,7 +79,7 @@ Now for the final layer. Remember earlier that the final layer will take the sha
 
 If this were an LLM, your final layer may have $50,000$ nodes, one for each vocab element. Your pre-activation score will be a vector $z = [z_1, z_2, \ldots, z_V] \quad (V = \text{vocabulary size})$ where each $z_n$ corresponds to one of the $50,000$ nodes. Each node pre-activation value $z_n$ is called a logit. Only the pre-activation scores for the final layer are called logits by the way. For an LLM, instead of a sigmoid you need something called a SoftMax function, which takes the massive pre-activation vector $z$ and turns it into a single probability distribution. We won't spend more time on it, other than saying it looks like this:
 
-$$P(\text{token } i) = \frac{e^{z_i}}{\sum_{j=1}^{V} e^{z_j}}$$
+$$P(\text{token } i) = \frac{e^{z_i}}{\sum_{j=1}^{V} e^{z_j}} \tag{8}$$
 
 ### Step 2: Loss Calculation
 Finally on to step 2.
@@ -107,20 +107,20 @@ We will restrict scope to classification tasks for now. The type of function use
 
 For a single prediction:
  
-$$L = -\big[\, y \log(p) + (1 - y)\log(1 - p) \,\big]$$
+$$L = -\big[\, y \log(p) + (1 - y)\log(1 - p) \,\big] \tag{9}$$
  
 where $y$ is the true label (0 or 1) and $p$ is the predicted probability of
 class 1 (the sigmoid output).
  
-- If $y = 1$: reduces to $L = -\log(p)$
-- If $y = 0$: reduces to $L = -\log(1 - p)$
+- If $y = 1$: Equation 9 reduces to $L = -\log(p)$
+- If $y = 0$: Equation 9 reduces to $L = -\log(1 - p)$
 Either way, it comes out to $-\log(\text{probability assigned to the correct class})$.
  
 Averaged over $N$ examples, you get the cost (loss) function:
  
-$$L = -\frac{1}{N}\sum_{n=1}^{N} \Big[\, y_n \log(p_n) + (1 - y_n)\log(1 - p_n) \,\Big]$$
+$$L = -\frac{1}{N}\sum_{n=1}^{N} \Big[\, y_n \log(p_n) + (1 - y_n)\log(1 - p_n) \,\Big] \tag{10}$$
  
-Now we have a loss function, we need to figure out how to minimise it.
+Now we have a loss function (Equation 10), we need to figure out how to minimise it.
 
 ### Step 4: Weight Update
 Yes, we're looking at the weight updates, which is step 4, before looking at backpropogation, which is step 3 in the MLP operational sequence. This is so we understand at a high level what we're doing, then we can zoom in on one element of the weight update, which will be backpropogation. The goal of training, as stated earlier, is to find the model weights that minimise the loss function. The process of minimising that loss function is called gradient descent, and backpropogation is used in gradient descent to find the gradient vector.
@@ -131,19 +131,19 @@ What is gradient descent? Imagine you are standing on the surface shown in the b
   <img src="images/image-5.png" alt="surface" width="500">
 </p>
 
-First, let me lay out the equations for gradient descent. For now, don't try understand them, just note their shape as we'll refer back to them later. 
+First, let me lay out the equations for gradient descent (Equations 11–13). For now, don't try understand them, just note their shape as we'll refer back to them later. 
 
-$$f(x) = f(x_k) + \nabla f(x_k)^{\mathsf{T}}\,(x - x_k) + \text{h.o.t.} \tag{1}$$
+$$f(x) = f(x_k) + \nabla f(x_k)^{\mathsf{T}}\,(x - x_k) + \text{h.o.t.} \tag{11}$$
 
-$$\nabla f(x_k)^{\mathsf{T}} = \frac{\partial f}{\partial x} = \begin{bmatrix} \dfrac{\partial f}{\partial x_1} & \dfrac{\partial f}{\partial x_2} & \cdots & \dfrac{\partial f}{\partial x_n} \end{bmatrix} \tag{2}$$
+$$\nabla f(x_k)^{\mathsf{T}} = \frac{\partial f}{\partial x} = \begin{bmatrix} \dfrac{\partial f}{\partial x_1} & \dfrac{\partial f}{\partial x_2} & \cdots & \dfrac{\partial f}{\partial x_n} \end{bmatrix} \tag{12}$$
 
-$$x_{k+1} = x_k - h_k\,\nabla f(x_k) \tag{3}$$
+$$x_{k+1} = x_k - h_k\,\nabla f(x_k) \tag{13}$$
 
-How do you find that minimum point? Well, think about what you would do if you were standing on a mountain range and someone said 'make your way to the bottom of the mountains'. The first thing you would do is figure out which direction to start walking in, i.e. which direction is 'down'. This is done in gradient descent by finding the gradient vector, denoted $\nabla f(x_k)$ in equation 3. A positive gradient means the surface slopes upward, so you need to take the negative to flip around and point your direction down the slope towards the bottom of the hill, which is how you end up with $-\nabla f(x_k)$.
+How do you find that minimum point? Well, think about what you would do if you were standing on a mountain range and someone said 'make your way to the bottom of the mountains'. The first thing you would do is figure out which direction to start walking in, i.e. which direction is 'down'. This is done in gradient descent by finding the gradient vector, denoted $\nabla f(x_k)$ in Equation 13 (and defined component-wise in Equation 12). A positive gradient means the surface slopes upward, so you need to take the negative to flip around and point your direction down the slope towards the bottom of the hill, which is how you end up with $-\nabla f(x_k)$.
 
 The other factor that has to be considered is how big each of your steps are as you walk down the hill, $h_k$. If you take small steps, you have a very safe but slow descent down the slope. If you take really big leaps you risk falling and hurting yourself. Applying this to gradient descent, small steps will gaurentee good results but just takes ages, while big steps could lead to very unstable behaviour. The formal name for the step size $h_k$ is the learning rate.
 
-Now we can see that the expression for gradient descent in equation 3 is really intuitive. You've got your current position $x_k$, and you subtract your next step times the direction of that step, $- h_k\,\nabla f(x_k)$. To make the connections with the equations earlier in this doc clearer, I present a mapping table below:
+Now we can see that the expression for gradient descent in Equation 13 is really intuitive. You've got your current position $x_k$, and you subtract your next step times the direction of that step, $- h_k\,\nabla f(x_k)$. To make the connections with the equations earlier in this doc clearer, I present a mapping table below:
 
 <div align="center">
 
@@ -163,9 +163,9 @@ This table should make the weight update step clear too.
 ### Step 3: Backpropogation
 In order to do the weight update step, we need to know the gradient vector. This is done using backpropogation. To illustrate Step 3 I will rely heavily on the illustrations done by Samy Baladram in his Medium article linked [here](https://medium.com/data-science/multilayer-perceptron-explained-a-visual-guide-with-mini-2d-dataset-0ae8100c5d1c).
 
-As hinted at above, given we're trying to minimise the loss by varying the weights, the gradient vector will take the form: 
+As hinted at above, given we're trying to minimise the loss by varying the weights, the gradient vector (the neural-net version of Equation 12) will take the form: 
 
-$$\nabla f(x_k) = \nabla L(w_k) = \left[ \frac{\partial L}{\partial w_1}, \frac{\partial L}{\partial w_2}, \dots, \frac{\partial L}{\partial w_n} \right]$$
+$$\nabla f(x_k) = \nabla L(w_k) = \left[ \frac{\partial L}{\partial w_1}, \frac{\partial L}{\partial w_2}, \dots, \frac{\partial L}{\partial w_n} \right] \tag{14}$$
 
 So, how do we find $\frac{\partial L}{\partial w_k}$? We will use the chain rule to examine the effect of each layer's weights and biases on the loss - to do so we'll evaluate the partial derivatives of all the elements of the MLP. With the way we've set up the partial derivatives, you will see that the result of the chain rule will cancel out to be $\frac{\partial L}{\partial w_k}$. 
 
@@ -195,7 +195,7 @@ Delving into the specific calculus rules used to find the respective partial der
 
 </div>
 
-You then multiply these through to get each weight and biases partial derivative!
+You then multiply these through to get each weight and bias partial derivative, i.e. the components $\frac{\partial L}{\partial w_k}$ that make up the gradient vector in Equation 14!
 
 However, we don't use the raw partial derivatives. Instead, we calculate layer errors, the gradient with respect to the pre-activation outputs, $\frac{\partial L}{\partial z_l} = \delta^{[l]}$ which help determine how much we should adjust the weights and biases in earlier layers. From a reductionist viewpoint, all we're doing here is calculating an intermediate variable that can be reused recursively instead of recalculating the expression at each stage of backprop, which when you're doing this calculation millions of times creates a lotttt of time and energy savings. The process of recursively calculating the layer errors looks like this:
 
@@ -203,3 +203,4 @@ However, we don't use the raw partial derivatives. Instead, we calculate layer e
   <img src="images/image-8.png" alt="layer errors" width="500">
 </p>
 
+Applying the chain rule again and using the layer errors we can now find the weight and biases gradients. 
