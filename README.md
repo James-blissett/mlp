@@ -43,7 +43,7 @@ Firstly, the network needs to be initialised with a set of values to start refin
 Then for each node, the pre-activation weighted sum is calculated. After that, the activation function is applied (the $\sigma!$). This activation function is often a Rectified Linear Unit (ReLU) function. What is a ReLU? It is a function that is positive linear when $x$ is positive, and is zero when $x$ is negative. Why apply this to the nodes? Well, at a high level an activation function is applied to allow positive values to pass unchanged and sets negative values to zero. 
 
 <p align="center">
-  <img src="image-3.png" alt="the shape of a ReLU and function" width="600">
+  <img src="images/image-3.png" alt="the shape of a ReLU and function" width="600">
 </p>
 
 
@@ -65,7 +65,7 @@ $$z^{(2)} = W' x + b'$$
 ...a single linear layer. So, if you don't apply an activation function, your massive fancy *deep* neural network collapses into just 1 layer. The activation function is what enables a neural network to be *deep*. What you're doing, geometrically, is that by applying the non-linear activation function, you bend the space a little, meaning the stacked layers can't be represented as a linear combination and you can therefore represent useful non-linear features in your model. The way layers then connect together is shown in the below diagram.
 
 <p align="center">
-  <img src="image-2.png" alt="How Weights and Biases are used" width="500">
+  <img src="images/image-2.png" alt="How Weights and Biases are used" width="500">
 </p>
 
 The ReLU function is used specifically (vs other functions such as a Sigmoid which is also often seen) because it has the following useful properties:
@@ -87,7 +87,7 @@ Finally on to step 2.
 A loss function is a function that evaluates the difference between the model's output and the desired output; it is something we want to minimise. It is synonymous with the error function, or cost function which you may be familiar with if you have studied control theory.
 
 <p align="center">
-  <img src="image-1.png" alt="Loss Function Categorisation" width="600">
+  <img src="images/image-1.png" alt="Loss Function Categorisation" width="600">
 </p>
 
 As seen in the above figure, there are two types of loss function: classification task loss functions, and regression task loss functions. Some examples of each type of loss include:
@@ -128,7 +128,7 @@ Yes, we're looking at the weight updates, which is step 4, before looking at bac
 What is gradient descent? Imagine you are standing on the surface shown in the below figure. This surface represents the set all the possible values your loss function can take. You want to find the minimum loss function, which means navigating to the lowest point on the surface. Note, the diagram below only has 2 weights modelled, which is the limit of what can be shown in 3D. More weights would mean more dimensions, which humans can't quite grasp.  
 
 <p align="center">
-  <img src="image-5.png" alt="surface" width="500">
+  <img src="images/image-5.png" alt="surface" width="500">
 </p>
 
 First, let me lay out the equations for gradient descent. For now, don't try understand them, just note their shape as we'll refer back to them later. 
@@ -172,9 +172,9 @@ So, how do we find $\frac{\partial L}{\partial w_k}$? We will use the chain rule
 <div align="center">
 <table>
 <tr>
-<td align="center"><img src="image-6.png" alt="MLP elements" width="400"></td>
+<td align="center"><img src="images/image-6.png" alt="MLP elements" width="400"></td>
 <td align="center"><h1>⟶</h1><em>take partial derivative of each element</em></td>
-<td align="center"><img src="image-7.png" alt="partial derivatives" width="473"></td>
+<td align="center"><img src="images/image-7.png" alt="partial derivatives" width="473"></td>
 </tr>
 </table>
 </div>
@@ -200,6 +200,6 @@ You then multiply these through to get each weight and biases partial derivative
 However, we don't use the raw partial derivatives. Instead, we calculate layer errors, the gradient with respect to the pre-activation outputs, $\frac{\partial L}{\partial z_l} = \delta^{[l]}$ which help determine how much we should adjust the weights and biases in earlier layers. From a reductionist viewpoint, all we're doing here is calculating an intermediate variable that can be reused recursively instead of recalculating the expression at each stage of backprop, which when you're doing this calculation millions of times creates a lotttt of time and energy savings. The process of recursively calculating the layer errors looks like this:
 
 <p align="center">
-  <img src="image-8.png" alt="layer errors" width="500">
+  <img src="images/image-8.png" alt="layer errors" width="500">
 </p>
 
