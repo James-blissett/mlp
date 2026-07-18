@@ -1,5 +1,5 @@
 # mlp
-Building an multi-layer perceptron by hand to build my understanding of the fundamentals.
+A multi-layer perceptron built from scratch. Raw math of forward passes, loss, and backprop worked out by hand to truly understand how neural networks learn.
 
 ### What is a Multi-Layer Perceptron (MLP), and why the name?
 
