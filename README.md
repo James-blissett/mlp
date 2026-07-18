@@ -197,4 +197,9 @@ Delving into the specific calculus rules used to find the respective partial der
 
 You then multiply these through to get each weight and biases partial derivative!
 
-However, we don't use the raw partial derivatives. Instead, we calculate layer errors, the gradient with respect to the pre-activation outputs, $\frac{\partial L}{\partial w_1}$ which help determine how much we should adjust the weights and biases in earlier layers. 
+However, we don't use the raw partial derivatives. Instead, we calculate layer errors, the gradient with respect to the pre-activation outputs, $\frac{\partial L}{\partial z_l} = \delta^{[l]}$ which help determine how much we should adjust the weights and biases in earlier layers. From a reductionist viewpoint, all we're doing here is calculating an intermediate variable that can be reused recursively instead of recalculating the expression at each stage of backprop, which when you're doing this calculation millions of times creates a lotttt of time and energy savings. The process of recursively calculating the layer errors looks like this:
+
+<p align="center">
+  <img src="image-8.png" alt="layer errors" width="500">
+</p>
+
