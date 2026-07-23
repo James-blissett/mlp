@@ -16,8 +16,9 @@ class MLP:
 
         for i in range(1, self.num_layers + 1):
             self.weights.append(np.random.randn(sizes[i], sizes[i-1]) * np.sqrt(2 / sizes[i-1])) # initialise weights as random numbers from standard normal distirbution, with He adjustment to make compatible with ReLU activation function
-            self.biases.append([0,0])                                                            # initialise to 0
+            self.biases.append(np.zeros(sizes[i],1))                                             # initialise to 0, per He convention
     
+    # forward pass
     def forward(self, X):
         # Forward pass through the network
         self.activations = [X]
@@ -33,9 +34,27 @@ class MLP:
             self.activations.append(a) 
         return self.activations[-1]     # shape: (output_size, m)
 
+    # backpropogation step
     def backprop(self, X, y):
-        return 0
+        m = X.shape[1]  # Num input examples; The training dataset is parsed as X
     
+        # Compute gradients
+        gradients = []                  # initialise gradient list
+        dZ = self.activations[-1] - y   # dL/dz, the y^{hat} - y step for the final layer
+
+        for i in range(self.num_layers - 1, -1, -1):
+            dW = (1 / m) * np.dot(dZ, self.activations[i].T)    # shape: (sizes[i-1], m) Equation 9
+            db = (1/m) * np.sum(dZ, axis=1, keepdims=True)      # shape: (sizes[i-1], m) Equation 9
+        
+        return gradients[::-1]  # reverse the gradients
+    
+    # Gradient descent step
+    def update_parameters(self, gradients, learning_rate):
+        for i in range(self.num_layers)
+
+
+        return 0
+
 
     def ReLU(self, Z):
         return np.maximum(0, Z)
