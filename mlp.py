@@ -50,10 +50,9 @@ class MLP:
     
     # Gradient descent step
     def update_parameters(self, gradients, learning_rate):
-        for i in range(self.num_layers)
-
-
-        return 0
+        for i in range(self.num_layers):
+            self.weights -= learning_rate * gradients[i][0]
+            self.biases[i] -= learning_rate * gradients[i][0]
 
 
     def ReLU(self, Z):
