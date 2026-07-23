@@ -16,7 +16,7 @@ class MLP:
 
         for i in range(1, self.num_layers + 1):
             self.weights.append(np.random.randn(sizes[i], sizes[i-1]) * np.sqrt(2 / sizes[i-1])) # initialise weights as random numbers from standard normal distirbution, with He adjustment to make compatible with ReLU activation function
-            self.biases.append(np.zeros(sizes[i],1))                                             # initialise to 0, per He convention
+            self.biases.append((np.zeros(sizes[i],1)))                                           # initialise to 0, per He convention
     
     # forward pass
     def forward(self, X):
@@ -25,12 +25,12 @@ class MLP:
         self.z = [] # pre-activation value
         
         for i in range(self.num_layers):
-            z = np.dot(self.weights[i], self.acativation[i]) + self.biases[i]
+            z = np.dot(self.weights[i], self.activations[i]) + self.biases[i]
             self.z.append(z)
             if i < self.num_layers - 1:
-                self.ReLU(z)            # ReLU activation function for hidden layers
+                a = self.ReLU(z)            # ReLU activation function for hidden layers
             else:
-                a = z                   # linear activations for output layer
+                a = self.sigmoid(z)                   # linear activations for output layer
             self.activations.append(a) 
         return self.activations[-1]     # shape: (output_size, m)
 
@@ -45,13 +45,16 @@ class MLP:
         for i in range(self.num_layers - 1, -1, -1):
             dW = (1 / m) * np.dot(dZ, self.activations[i].T)    # shape: (sizes[i-1], m) Equation 9
             db = (1/m) * np.sum(dZ, axis=1, keepdims=True)      # shape: (sizes[i-1], m) Equation 9
+
+            if i > 0:
+                dA = np.dot(self.weights[i].T, dZ)      # shape: (sizes[i-1], m)
         
         return gradients[::-1]  # reverse the gradients
     
     # Gradient descent step
     def update_parameters(self, gradients, learning_rate):
         for i in range(self.num_layers):
-            self.weights -= learning_rate * gradients[i][0]
+            self.weights[i] -= learning_rate * gradients[i][0]
             self.biases[i] -= learning_rate * gradients[i][0]
 
     # Activation function
@@ -66,12 +69,25 @@ class MLP:
     def sigmoid(self, Z):
         return 1 / (1 + np.exp(-Z))
 
+def plot_loss_curve(losses, save_path="loss_curve.png"):
+    import matplotlib.pyplot as plt
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(range(1, len(losses) + 1), losses)
+    plt.xlabel("Epoch")
+    plt.ylabel("Binary Cross-Entropy Loss")
+    plt.title("Training Loss Curve")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(save_path)
+    plt.show()
+
 if __name__ == "__main__":
     from sklearn.datasets import make_classification
     from sklearn.model_selection import train_test_split
 
     # Generate synthetic classification dataset
-    X, y = make_classification(n_samples = 100, n_features = 1, noise = 0.1, random_state = 42)
+    X, y = make_classification(n_samples = 100, n_features = 2, n_informative = 2, n_redundant = 0, random_state = 42)
 
     # Split dataset into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state= 42)
@@ -84,7 +100,7 @@ if __name__ == "__main__":
 
     # Convert the targets to column vectors
     y_train = y_train.reshape(-1,1)
-    y_test = y.test.reshape(-1,1)
+    y_test = y_test.reshape(-1,1)
 
     # Define the MLP model
     input_size = X_train.shape[1]
@@ -95,6 +111,9 @@ if __name__ == "__main__":
     # Training parameters
     num_epochs = 500
     learning_rate = 0.05
+
+    # Track loss over epochs for plotting
+    losses = []
 
     # Training loop
     for epoch in range(num_epochs):
@@ -108,6 +127,7 @@ if __name__ == "__main__":
         # Compute and print Binary Cross-Entropy Loss
         eps = 1e-8
         loss = -np.mean(y_train.T * np.log(outputs + eps) + (1 - y_train.T) * np.log(1 - outputs + eps))
+        losses.append(loss)
 
         if ((epoch + 1) % 100) == 0:
             print(f"Epoch {epoch + 1} - Loss: {loss}")
@@ -116,4 +136,7 @@ if __name__ == "__main__":
     test_outputs = mlp.forward(X_test.T)
     test_loss = np.mean(y_test.T * np.log(outputs + eps) + (1 - y_test.T) * np.log(1 - outputs + eps))
     print(f"Test Loss: {test_loss}")
+
+    # Plot the training loss curve
+    plot_loss_curve(losses)
 
