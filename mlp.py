@@ -30,7 +30,7 @@ class MLP:
             if i < self.num_layers - 1:
                 a = self.ReLU(z)            # ReLU activation function for hidden layers
             else:
-                a = self.sigmoid(z)                   # linear activations for output layer
+                a = self.sigmoid(z)                   # activations for output layer
             self.activations.append(a) 
         return self.activations[-1]     # shape: (output_size, m)
 
@@ -43,8 +43,8 @@ class MLP:
         dZ = self.activations[-1] - y   # dL/dz, the y^{hat} - y step for the final layer
 
         for i in range(self.num_layers - 1, -1, -1):
-            dW = (1 / m) * np.dot(dZ, self.activations[i].T)    # shape: (sizes[i-1], m) Equation 9
-            db = (1/m) * np.sum(dZ, axis=1, keepdims=True)      # shape: (sizes[i-1], m) Equation 9
+            dW = (1 / m) * np.dot(dZ, self.activations[i].T)    # shape: (sizes[i], sizes[i-1]) Equation 9
+            db = (1/m) * np.sum(dZ, axis=1, keepdims=True)      # shape: (sizes[i], 1) Equation 9
             gradients.append((dW, db))
 
             if i > 0:
@@ -57,7 +57,7 @@ class MLP:
     def update_parameters(self, gradients, learning_rate):
         for i in range(self.num_layers):
             self.weights[i] -= learning_rate * gradients[i][0]
-            self.biases[i] -= learning_rate * gradients[i][0]
+            self.biases[i] -= learning_rate * gradients[i][1]
 
     # Activation function
     def ReLU(self, Z):
@@ -82,7 +82,6 @@ def plot_loss_curve(losses, save_path="loss_curve.png"):
     plt.grid(True)
     plt.tight_layout()
     plt.savefig(save_path)
-    plt.show()
 
 if __name__ == "__main__":
     from sklearn.datasets import make_classification
@@ -95,8 +94,8 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state= 42)
 
     # Normalise the input data
-    X_train_mean = np.mean(X_train)
-    X_train_std = np.std(X_train)
+    X_train_mean = np.mean(X_train, axis = 0)
+    X_train_std = np.std(X_train, axis = 0)
     X_train = (X_train - X_train_mean) / X_train_std
     X_test = (X_test - X_train_mean) / X_train_std
 
@@ -111,8 +110,8 @@ if __name__ == "__main__":
     mlp = MLP(input_size, hidden_sizes, output_size)
 
     # Training parameters
-    num_epochs = 500
-    learning_rate = 0.05
+    num_epochs = 1000
+    learning_rate = 0.01
 
     # Track loss over epochs for plotting
     losses = []
