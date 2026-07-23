@@ -16,7 +16,7 @@ class MLP:
 
         for i in range(1, self.num_layers + 1):
             self.weights.append(np.random.randn(sizes[i], sizes[i-1]) * np.sqrt(2 / sizes[i-1])) # initialise weights as random numbers from standard normal distirbution, with He adjustment to make compatible with ReLU activation function
-            self.biases.append((np.zeros(sizes[i],1)))                                           # initialise to 0, per He convention
+            self.biases.append(np.zeros((sizes[i],1)))                                           # initialise to 0, per He convention
     
     # forward pass
     def forward(self, X):
@@ -45,9 +45,11 @@ class MLP:
         for i in range(self.num_layers - 1, -1, -1):
             dW = (1 / m) * np.dot(dZ, self.activations[i].T)    # shape: (sizes[i-1], m) Equation 9
             db = (1/m) * np.sum(dZ, axis=1, keepdims=True)      # shape: (sizes[i-1], m) Equation 9
+            gradients.append((dW, db))
 
             if i > 0:
-                dA = np.dot(self.weights[i].T, dZ)      # shape: (sizes[i-1], m)
+                dA = np.dot(self.weights[i].T, dZ)          # shape: (sizes[i-1], m)
+                dZ = dA * self.ReLUgradient(self.z[i-1])   # shape: (sizes[i-1], m)
         
         return gradients[::-1]  # reverse the gradients
     
@@ -134,7 +136,7 @@ if __name__ == "__main__":
         
     # Testing
     test_outputs = mlp.forward(X_test.T)
-    test_loss = np.mean(y_test.T * np.log(outputs + eps) + (1 - y_test.T) * np.log(1 - outputs + eps))
+    test_loss = -np.mean(y_test.T * np.log(test_outputs + eps) + (1 - y_test.T) * np.log(1 - test_outputs + eps))
     print(f"Test Loss: {test_loss}")
 
     # Plot the training loss curve
