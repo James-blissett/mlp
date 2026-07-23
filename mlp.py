@@ -54,13 +54,66 @@ class MLP:
             self.weights -= learning_rate * gradients[i][0]
             self.biases[i] -= learning_rate * gradients[i][0]
 
-
+    # Activation function
     def ReLU(self, Z):
         return np.maximum(0, Z)
     
+    # Activation function derivative
     def ReLUgradient(self, Z):
         return (Z > 0).astype(float)    # 1 where z > 0, else 0
         
-
+    # Output function
     def sigmoid(self, Z):
         return 1 / (1 + np.exp(-Z))
+
+if __name__ == "__main__":
+    from sklearn.datasets import make_classification
+    from sklearn.model_selection import train_test_split
+
+    # Generate synthetic classification dataset
+    X, y = make_classification(n_samples = 100, n_features = 1, noise = 0.1, random_state = 42)
+
+    # Split dataset into train and test sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state= 42)
+
+    # Normalise the input data
+    X_train_mean = np.mean(X_train)
+    X_train_std = np.std(X_train)
+    X_train = (X_train - X_train_mean) / X_train_std
+    X_test = (X_test - X_train_mean) / X_train_std
+
+    # Convert the targets to column vectors
+    y_train = y_train.reshape(-1,1)
+    y_test = y.test.reshape(-1,1)
+
+    # Define the MLP model
+    input_size = X_train.shape[1]
+    hidden_sizes = [10, 10]
+    output_size = y_train.shape[1]
+    mlp = MLP(input_size, hidden_sizes, output_size)
+
+    # Training parameters
+    num_epochs = 500
+    learning_rate = 0.05
+
+    # Training loop
+    for epoch in range(num_epochs):
+        # Calling forward pass
+        outputs = mlp.forward(X_train.T)
+
+        # Backprop and gradient descent step for paramater update
+        gradients = mlp.backprop(X_train.T, y_train.T)
+        mlp.update_parameters(gradients, learning_rate)
+
+        # Compute and print Binary Cross-Entropy Loss
+        eps = 1e-8
+        loss = -np.mean(y_train.T * np.log(outputs + eps) + (1 - y_train.T) * np.log(1 - outputs + eps))
+
+        if ((epoch + 1) % 100) == 0:
+            print(f"Epoch {epoch + 1} - Loss: {loss}")
+        
+    # Testing
+    test_outputs = mlp.forward(X_test.T)
+    test_loss = np.mean(y_test.T * np.log(outputs + eps) + (1 - y_test.T) * np.log(1 - outputs + eps))
+    print(f"Test Loss: {test_loss}")
+
